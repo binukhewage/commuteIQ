@@ -12,8 +12,6 @@ import {
   ArrowRight,
   Zap,
   ChevronRight,
-  Shield,
-  Layers,
 } from "lucide-react";
 
 export default function Home() {
@@ -64,14 +62,14 @@ export default function Home() {
       {/* HEADER */}
       <header className="w-full bg-zinc-950/40 backdrop-blur-md border-b border-zinc-900/60 z-20">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+          <Link href="/" className="flex items-center gap-2.5 group">
             <div className="p-2 rounded-lg bg-gradient-to-tr from-indigo-600 to-cyan-500 text-white shadow-md shadow-indigo-500/10">
-              <Car className="size-5" />
+              <Car className="size-5 group-hover:scale-110 transition-transform" />
             </div>
             <span className="font-extrabold text-base tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400">
               CommuteIQ
             </span>
-          </div>
+          </Link>
 
           <div className="flex items-center gap-3">
             {isLoggedIn ? (
@@ -127,14 +125,14 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto pt-2">
             <Link
               href="/signup"
-              className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white font-bold py-3 px-6 rounded-xl text-xs tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-indigo-500/20"
+              className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white font-bold py-3 px-6 rounded-xl text-xs tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-indigo-500/20 text-center"
             >
               <span>Start Tracking Free</span>
               <ArrowRight className="size-4" />
             </Link>
             <Link
               href="/login"
-              className="w-full sm:w-auto glass-panel border-zinc-900 text-zinc-300 hover:text-white py-3 px-6 rounded-xl text-xs tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full sm:w-auto glass-panel border-zinc-900 text-zinc-300 hover:text-white py-3 px-6 rounded-xl text-xs tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] text-center"
             >
               <span>Log In to Account</span>
             </Link>
