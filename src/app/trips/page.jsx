@@ -237,7 +237,7 @@ export default function TripsPage() {
 
                 <div>
                   <label className="block text-zinc-400 text-xs font-semibold mb-1.5 uppercase tracking-wider">
-                    Route Type
+                    Route 
                   </label>
                   <select
                     value={routeType}
