@@ -803,7 +803,7 @@ export default function DashboardPage() {
               </button>
             </div>
 
-            <div className="space-y-3.5 max-h-60 overflow-y-auto pr-1">
+            <div className="space-y-3.5 md:max-h-60 md:overflow-y-auto pr-1">
               {recentTrips.length > 0 ? (
                 recentTrips.map((trip) => (
                   <div

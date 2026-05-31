@@ -361,7 +361,7 @@ export default function TripsPage() {
                 <div className="size-8 border-2 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
               </div>
             ) : trips.length > 0 ? (
-              <div className="space-y-3.5 max-h-[640px] overflow-y-auto pr-1">
+              <div className="space-y-3.5 md:max-h-[640px] md:overflow-y-auto pr-1">
                 {trips.map((trip) => (
                   <div
                     key={trip.id}
