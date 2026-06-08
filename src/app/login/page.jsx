@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Car, Mail, Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,17 +16,17 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    checkSession();
-  }, []);
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        router.push("/dashboard");
+      }
+    };
 
-  const checkSession = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (session) {
-      router.push("/dashboard");
-    }
-  };
+    checkSession();
+  }, [router]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -48,7 +49,12 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-zinc-950 text-white px-4 py-8 relative overflow-hidden">
+    <main className="min-h-screen flex items-center justify-center bg-background text-foreground px-4 py-8 relative overflow-hidden">
+      {/* Theme Toggle */}
+      <div className="absolute top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+
       {/* Decorative Blur Backgrounds for Phone/Desktop */}
       <div className="absolute top-0 left-1/4 size-80 rounded-full bg-indigo-500/5 blur-3xl -z-10 pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 size-80 rounded-full bg-cyan-500/5 blur-3xl -z-10 pointer-events-none" />
@@ -60,10 +66,10 @@ export default function LoginPage() {
             <Car className="size-8" />
           </div>
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400">
+            <h1 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-muted-foreground">
               Welcome back
             </h1>
-            <p className="text-zinc-500 text-sm mt-1.5 font-medium">
+            <p className="text-muted-foreground text-sm mt-1.5 font-medium">
               Log in to your CommuteIQ fuel tracking account
             </p>
           </div>
@@ -72,15 +78,15 @@ export default function LoginPage() {
         {/* GLASS PANEL FORM */}
         <form
           onSubmit={handleLogin}
-          className="glass-panel border-zinc-900 rounded-3xl p-6 md:p-8 space-y-5"
+          className="glass-panel rounded-3xl p-6 md:p-8 space-y-5"
         >
           {/* EMAIL */}
           <div className="space-y-1.5">
-            <label className="block text-zinc-400 text-xs font-semibold uppercase tracking-wider">
+            <label className="block text-muted-foreground text-xs font-semibold uppercase tracking-wider">
               Email Address
             </label>
             <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">
                 <Mail className="size-4.5" />
               </span>
               <input
@@ -89,7 +95,7 @@ export default function LoginPage() {
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 pl-11 rounded-xl bg-zinc-900/80 border border-zinc-800 focus:outline-none focus:border-indigo-500 text-sm font-medium placeholder-zinc-600 transition-colors"
+                className="w-full p-3 pl-11 rounded-xl bg-background border border-border focus:outline-none focus:border-primary text-sm font-medium placeholder-muted-foreground/60 text-foreground transition-colors"
               />
             </div>
           </div>
@@ -97,12 +103,12 @@ export default function LoginPage() {
           {/* PASSWORD */}
           <div className="space-y-1.5">
             <div className="flex justify-between items-center">
-              <label className="block text-zinc-400 text-xs font-semibold uppercase tracking-wider">
+              <label className="block text-muted-foreground text-xs font-semibold uppercase tracking-wider">
                 Password
               </label>
             </div>
             <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">
                 <Lock className="size-4.5" />
               </span>
               <input
@@ -111,12 +117,12 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-3 pl-11 pr-11 rounded-xl bg-zinc-900/80 border border-zinc-800 focus:outline-none focus:border-indigo-500 text-sm font-medium placeholder-zinc-600 transition-colors"
+                className="w-full p-3 pl-11 pr-11 rounded-xl bg-background border border-border focus:outline-none focus:border-primary text-sm font-medium placeholder-muted-foreground/60 text-foreground transition-colors"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 {showPassword ? (
                   <EyeOff className="size-4.5" />
@@ -131,7 +137,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-white hover:bg-zinc-200 text-black py-3 px-4 rounded-xl font-bold text-xs tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 shadow-lg shadow-white/5"
+            className="w-full bg-foreground text-background hover:bg-foreground/90 py-3 px-4 rounded-xl font-bold text-xs tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 shadow-md shadow-foreground/5"
           >
             <span>{loading ? "Logging in..." : "Log In"}</span>
             {!loading && <ArrowRight className="size-4" />}
@@ -139,11 +145,11 @@ export default function LoginPage() {
         </form>
 
         {/* BOTTOM REDIRECT LINK */}
-        <p className="text-center text-zinc-500 text-xs font-semibold">
-          Don't have an account?{" "}
+        <p className="text-center text-muted-foreground text-xs font-semibold">
+          Don&apos;t have an account?{" "}
           <Link
             href="/signup"
-            className="text-indigo-400 hover:text-indigo-300 transition-colors"
+            className="text-indigo-500 dark:text-indigo-400 hover:text-indigo-650 dark:hover:text-indigo-350 transition-colors"
           >
             Create an account
           </Link>

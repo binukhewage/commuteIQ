@@ -62,13 +62,26 @@ export default function DashboardPage() {
   const [newFuelPrice, setNewFuelPrice] = useState("");
   const [dailyData, setDailyData] = useState([]);
   const [recentTrips, setRecentTrips] = useState([]);
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
     checkUser();
     fetchDashboardData();
+
+    const checkTheme = () => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    };
+    checkTheme();
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const checkUser = async () => {
+  async function checkUser() {
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -78,7 +91,7 @@ export default function DashboardPage() {
     }
   };
 
-  const fetchDashboardData = async () => {
+  async function fetchDashboardData() {
     try {
       setLoading(true);
       const {
@@ -263,10 +276,10 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="size-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
-          <p className="text-zinc-400 text-sm font-medium tracking-wide">
+          <p className="text-muted-foreground text-sm font-medium tracking-wide">
             Loading CommuteIQ Analytics...
           </p>
         </div>
@@ -280,16 +293,16 @@ export default function DashboardPage() {
   const budgetPercentage = Math.min(100, (monthlySpending / budgetLimit) * 100);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white flex">
+    <div className="min-h-screen bg-background text-foreground flex">
       {/* Persistent Premium Sidebar */}
       <Sidebar />
 
       {/* Main Content Area */}
       <main className="flex-1 md:pl-64 pb-24 md:pb-8 p-4 md:p-10 max-w-7xl mx-auto w-full space-y-8 overflow-x-hidden animate-slide-up">
         {/* HEADER */}
-        <header className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-zinc-900 pb-6">
+        <header className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-border pb-6">
           <div>
-            <div className="flex items-center gap-2 text-indigo-400 text-sm font-semibold uppercase tracking-wider mb-1">
+            <div className="flex items-center gap-2 text-indigo-500 dark:text-indigo-400 text-sm font-semibold uppercase tracking-wider mb-1">
               <Calendar className="size-4" />
               <span>
                 {new Date().toLocaleDateString("en-US", {
@@ -298,10 +311,10 @@ export default function DashboardPage() {
                 })}
               </span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400">
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-muted-foreground">
               Fuel Analytics Dashboard
             </h1>
-            <p className="text-zinc-500 text-sm mt-1">
+            <p className="text-muted-foreground text-sm mt-1">
               Analyze your commuting efficiency and fuel consumption in real time.
             </p>
           </div>
@@ -309,14 +322,14 @@ export default function DashboardPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.push("/trips")}
-              className="glass-panel text-white hover:bg-zinc-900 border border-zinc-800/80 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 flex items-center gap-2 hover:scale-[1.02]"
+              className="glass-panel text-foreground hover:bg-secondary border border-border px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 flex items-center gap-2 hover:scale-[1.02]"
             >
-              <Plus className="size-4 text-indigo-400" />
+              <Plus className="size-4 text-indigo-500" />
               <span>Log Trip</span>
             </button>
             <button
               onClick={() => router.push("/fuel")}
-              className="bg-white text-black hover:bg-zinc-200 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 flex items-center gap-2 hover:scale-[1.02] shadow-lg shadow-white/5"
+              className="bg-foreground text-background hover:bg-foreground/90 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 flex items-center gap-2 hover:scale-[1.02] shadow-md shadow-foreground/5"
             >
               <Plus className="size-4" />
               <span>Add Fuel</span>
@@ -329,10 +342,10 @@ export default function DashboardPage() {
           {/* Fuel Price Card */}
           <div className="glass-panel rounded-2xl p-6 relative overflow-hidden glass-panel-hover group transition-all duration-300 border-l-2 border-l-cyan-500">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-zinc-400 text-xs font-semibold tracking-wider uppercase">
+              <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                 Current Fuel Price
               </span>
-              <div className="p-2 bg-cyan-950/40 rounded-xl text-cyan-400 group-hover:scale-110 transition-transform">
+              <div className="p-2 bg-cyan-500/10 rounded-xl text-cyan-600 dark:text-cyan-400 group-hover:scale-110 transition-transform">
                 <Coins className="size-5" />
               </div>
             </div>
@@ -343,7 +356,7 @@ export default function DashboardPage() {
                   type="number"
                   value={newFuelPrice}
                   onChange={(e) => setNewFuelPrice(e.target.value)}
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1 text-lg font-bold text-white focus:outline-none focus:border-cyan-500"
+                  className="w-full bg-background border border-border rounded-lg px-2 py-1 text-lg font-bold text-foreground focus:outline-none focus:border-cyan-500"
                 />
                 <button
                   onClick={handleUpdateFuelPrice}
@@ -353,7 +366,7 @@ export default function DashboardPage() {
                 </button>
                 <button
                   onClick={() => setIsEditingPrice(false)}
-                  className="p-1.5 bg-zinc-800 text-zinc-400 rounded-lg hover:bg-zinc-700 transition-colors"
+                  className="p-1.5 bg-secondary text-muted-foreground rounded-lg hover:bg-secondary/80 transition-colors"
                 >
                   <X className="size-4" />
                 </button>
@@ -365,14 +378,14 @@ export default function DashboardPage() {
                 </h2>
                 <button
                   onClick={() => setIsEditingPrice(true)}
-                  className="text-xs text-zinc-500 hover:text-cyan-400 transition-colors flex items-center gap-1 group/btn"
+                  className="text-xs text-muted-foreground hover:text-cyan-500 transition-colors flex items-center gap-1 group/btn"
                 >
                   <Edit2 className="size-3 group-hover/btn:translate-x-0.5 transition-transform" />
                   <span>Update</span>
                 </button>
               </div>
             )}
-            <p className="text-[10px] text-zinc-500 mt-3 font-medium">
+            <p className="text-[10px] text-muted-foreground mt-3 font-medium">
               Used to calculate trip expenses automatically
             </p>
           </div>
@@ -380,10 +393,10 @@ export default function DashboardPage() {
           {/* Remaining Fuel Card */}
           <div className="glass-panel rounded-2xl p-6 relative overflow-hidden glass-panel-hover group transition-all duration-300 border-l-2 border-l-emerald-500">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-zinc-400 text-xs font-semibold tracking-wider uppercase">
+              <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                 Remaining Fuel
               </span>
-              <div className="p-2 bg-emerald-950/40 rounded-xl text-emerald-400 group-hover:scale-110 transition-transform">
+              <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
                 <Fuel className="size-5" />
               </div>
             </div>
@@ -395,8 +408,8 @@ export default function DashboardPage() {
               <span
                 className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                   remainingFuel > 15
-                    ? "bg-emerald-950/50 text-emerald-400 border border-emerald-900/50"
-                    : "bg-amber-950/50 text-amber-400 border border-amber-900/50"
+                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25"
+                    : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25"
                 }`}
               >
                 {remainingFuel > 0
@@ -406,7 +419,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Glowing progress line */}
-            <div className="w-full bg-zinc-900 rounded-full h-1.5 mt-4 overflow-hidden border border-zinc-900">
+            <div className="w-full bg-muted rounded-full h-1.5 mt-4 overflow-hidden border border-border">
               <div
                 className="bg-gradient-to-r from-emerald-600 to-emerald-400 h-1.5 rounded-full transition-all duration-1000"
                 style={{
@@ -422,10 +435,10 @@ export default function DashboardPage() {
           {/* Monthly Estimated Spend Card */}
           <div className="glass-panel rounded-2xl p-6 relative overflow-hidden glass-panel-hover group transition-all duration-300 border-l-2 border-l-purple-500">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-zinc-400 text-xs font-semibold tracking-wider uppercase">
+              <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                 Commute Trip Cost
               </span>
-              <div className="p-2 bg-purple-950/40 rounded-xl text-purple-400 group-hover:scale-110 transition-transform">
+              <div className="p-2 bg-purple-500/10 rounded-xl text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform">
                 <Route className="size-5" />
               </div>
             </div>
@@ -434,10 +447,10 @@ export default function DashboardPage() {
               <h2 className="text-3xl font-extrabold tracking-tight">
                 Rs. {monthlySpending.toFixed(0)}
               </h2>
-              <span className="text-xs text-zinc-500">Trip estimated value</span>
+              <span className="text-xs text-muted-foreground">Trip estimated value</span>
             </div>
 
-            <div className="w-full bg-zinc-900 rounded-full h-1.5 mt-4 overflow-hidden border border-zinc-900">
+            <div className="w-full bg-muted rounded-full h-1.5 mt-4 overflow-hidden border border-border">
               <div
                 className="bg-gradient-to-r from-purple-600 to-purple-400 h-1.5 rounded-full"
                 style={{ width: `${budgetPercentage}%` }}
@@ -448,10 +461,10 @@ export default function DashboardPage() {
           {/* Predicted Monthly Card */}
           <div className="glass-panel rounded-2xl p-6 relative overflow-hidden glass-panel-hover group transition-all duration-300 border-l-2 border-l-amber-500">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-zinc-400 text-xs font-semibold tracking-wider uppercase">
+              <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                 Predicted Spend
               </span>
-              <div className="p-2 bg-amber-950/40 rounded-xl text-amber-400 group-hover:scale-110 transition-transform">
+              <div className="p-2 bg-amber-500/10 rounded-xl text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform">
                 <TrendingUp className="size-5" />
               </div>
             </div>
@@ -463,31 +476,31 @@ export default function DashboardPage() {
               <span
                 className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                   predictedMonthlyCost > budgetLimit
-                    ? "bg-rose-950/50 text-rose-400 border border-rose-900/50"
-                    : "bg-emerald-950/50 text-emerald-400 border border-emerald-900/50"
+                    ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/25"
+                    : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25"
                 }`}
               >
                 {predictedMonthlyCost > budgetLimit ? "Over budget" : "On track"}
               </span>
             </div>
-            <p className="text-[10px] text-zinc-500 mt-3 font-medium">
+            <p className="text-[10px] text-muted-foreground mt-3 font-medium">
               Based on spending velocity this month
             </p>
           </div>
         </section>
 
         {/* SPECIFIC REQUESTED MONTHLY STATISTICS */}
-        <section className="bg-gradient-to-b from-zinc-900/40 to-zinc-950/20 border border-zinc-900 rounded-3xl p-6 md:p-8 space-y-6">
-          <div className="flex items-center justify-between border-b border-zinc-900 pb-4">
+        <section className="bg-gradient-to-b from-card/40 to-background/20 border border-border rounded-3xl p-6 md:p-8 space-y-6">
+          <div className="flex items-center justify-between border-b border-border pb-4">
             <div>
               <h3 className="text-lg font-bold tracking-tight">
                 Monthly Statistics Dashboard
               </h3>
-              <p className="text-zinc-500 text-xs mt-0.5">
+              <p className="text-muted-foreground text-xs mt-0.5">
                 Current month aggregated parameters (Kms Travelled, Litres Used, Refuel Spend).
               </p>
             </div>
-            <div className="flex items-center gap-1 text-xs text-indigo-400 font-semibold bg-indigo-950/30 px-3 py-1 rounded-full border border-indigo-900/30">
+            <div className="flex items-center gap-1 text-xs text-indigo-500 dark:text-indigo-400 font-semibold bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/25">
               <Gauge className="size-3.5" />
               <span>Real-time Sync</span>
             </div>
@@ -495,12 +508,12 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Total Monthly Kms Travelled */}
-            <div className="glass-panel bg-zinc-900/40 p-5 rounded-2xl relative overflow-hidden group hover:border-zinc-800 transition-all duration-300">
+            <div className="glass-panel bg-card/40 p-5 rounded-2xl relative overflow-hidden group hover:border-border/80 transition-all duration-300">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold text-zinc-400 tracking-wider uppercase">
+                <span className="text-xs font-semibold text-muted-foreground tracking-wider uppercase">
                   Total Kms Travelled
                 </span>
-                <div className="p-2 bg-indigo-950/40 rounded-xl text-indigo-400 group-hover:scale-110 transition-transform">
+                <div className="p-2 bg-indigo-500/10 rounded-xl text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
                   <Milestone className="size-4" />
                 </div>
               </div>
@@ -508,9 +521,9 @@ export default function DashboardPage() {
                 <span className="text-4xl font-extrabold tracking-tight">
                   {totalDistance.toFixed(0)}
                 </span>
-                <span className="text-zinc-500 text-sm font-semibold">KM</span>
+                <span className="text-muted-foreground text-sm font-semibold">KM</span>
               </div>
-              <p className="text-[10px] text-zinc-500 mt-3">
+              <p className="text-[10px] text-muted-foreground mt-3">
                 Driven in trips completed this month
               </p>
               {/* Dynamic decorative element */}
@@ -518,12 +531,12 @@ export default function DashboardPage() {
             </div>
 
             {/* Total Monthly Litres Used */}
-            <div className="glass-panel bg-zinc-900/40 p-5 rounded-2xl relative overflow-hidden group hover:border-zinc-800 transition-all duration-300">
+            <div className="glass-panel bg-card/40 p-5 rounded-2xl relative overflow-hidden group hover:border-border/80 transition-all duration-300">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold text-zinc-400 tracking-wider uppercase">
+                <span className="text-xs font-semibold text-muted-foreground tracking-wider uppercase">
                   Total Litres Used
                 </span>
-                <div className="p-2 bg-cyan-950/40 rounded-xl text-cyan-400 group-hover:scale-110 transition-transform">
+                <div className="p-2 bg-cyan-500/10 rounded-xl text-cyan-600 dark:text-cyan-400 group-hover:scale-110 transition-transform">
                   <Fuel className="size-4" />
                 </div>
               </div>
@@ -531,16 +544,16 @@ export default function DashboardPage() {
                 <span className="text-4xl font-extrabold tracking-tight">
                   {monthlyFuelUsed.toFixed(1)}
                 </span>
-                <span className="text-zinc-500 text-sm font-semibold">Litres</span>
+                <span className="text-muted-foreground text-sm font-semibold">Litres</span>
               </div>
               {/* Average efficiency */}
-              <p className="text-[10px] text-zinc-500 mt-3 flex items-center gap-1.5">
-                <Activity className="size-3 text-cyan-400" />
+              <p className="text-[10px] text-muted-foreground mt-3 flex items-center gap-1.5">
+                <Activity className="size-3 text-cyan-500" />
                 <span>
                   Avg. Consumption:{" "}
                   {totalDistance > 0 && monthlyFuelUsed > 0
                     ? (totalDistance / monthlyFuelUsed).toFixed(1)
-                    : "0"} {" "}
+                    : "0"}{" "}
                   KM/L
                 </span>
               </p>
@@ -548,12 +561,12 @@ export default function DashboardPage() {
             </div>
 
             {/* Total Monthly Price Spent on Fuel */}
-            <div className="glass-panel bg-zinc-900/40 p-5 rounded-2xl relative overflow-hidden group hover:border-zinc-800 transition-all duration-300">
+            <div className="glass-panel bg-card/40 p-5 rounded-2xl relative overflow-hidden group hover:border-border/80 transition-all duration-300">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold text-zinc-400 tracking-wider uppercase">
+                <span className="text-xs font-semibold text-muted-foreground tracking-wider uppercase">
                   Monthly Refuel Spend
                 </span>
-                <div className="p-2 bg-emerald-950/40 rounded-xl text-emerald-400 group-hover:scale-110 transition-transform">
+                <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
                   <Coins className="size-4" />
                 </div>
               </div>
@@ -562,7 +575,7 @@ export default function DashboardPage() {
                   Rs. {monthlyRefuelSpend.toFixed(0)}
                 </span>
               </div>
-              <p className="text-[10px] text-zinc-500 mt-3">
+              <p className="text-[10px] text-muted-foreground mt-3">
                 Actual expenditure logged at fuel stations
               </p>
               <div className="absolute right-0 bottom-0 translate-y-1/3 translate-x-1/3 size-20 rounded-full bg-emerald-500/5 blur-xl group-hover:bg-emerald-500/10 transition-colors" />
@@ -579,12 +592,12 @@ export default function DashboardPage() {
                 <h3 className="text-lg font-bold tracking-tight">
                   Commute Costs (Current Month)
                 </h3>
-                <p className="text-zinc-500 text-xs mt-0.5">
+                <p className="text-muted-foreground text-xs mt-0.5">
                   Daily estimated fuel cost breakdown of trips logged.
                 </p>
               </div>
               <div className="text-right">
-                <span className="text-xs font-semibold text-zinc-400">
+                <span className="text-xs font-semibold text-muted-foreground">
                   Daily Spending Pattern
                 </span>
               </div>
@@ -615,19 +628,19 @@ export default function DashboardPage() {
                       dataKey="day"
                       tickLine={false}
                       axisLine={false}
-                      tick={{ fill: "#71717a", fontSize: 10 }}
+                      tick={{ fill: isDark ? "#71717a" : "#64748b", fontSize: 10 }}
                     />
                     <YAxis
                       tickLine={false}
                       axisLine={false}
-                      tick={{ fill: "#71717a", fontSize: 10 }}
+                      tick={{ fill: isDark ? "#71717a" : "#64748b", fontSize: 10 }}
                     />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: "#09090b",
-                        border: "1px solid #18181b",
+                        backgroundColor: isDark ? "#09090b" : "#ffffff",
+                        border: `1px solid ${isDark ? "#1c1c1f" : "#e2e8f0"}`,
                         borderRadius: "12px",
-                        color: "#fff",
+                        color: isDark ? "#ffffff" : "#0f172a",
                         fontSize: "12px",
                       }}
                       labelFormatter={(label) => `Day ${label}`}
@@ -643,7 +656,7 @@ export default function DashboardPage() {
                   </AreaChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="h-full flex items-center justify-center text-zinc-600 text-xs">
+                <div className="h-full flex items-center justify-center text-muted-foreground/60 text-xs">
                   No trips logged in the current month to visualize.
                 </div>
               )}
@@ -656,7 +669,7 @@ export default function DashboardPage() {
               <h3 className="text-lg font-bold tracking-tight">
                 Category Split
               </h3>
-              <p className="text-zinc-500 text-xs mt-0.5">
+              <p className="text-muted-foreground text-xs mt-0.5">
                 Spending comparison for personal vs office commutes.
               </p>
             </div>
@@ -683,7 +696,7 @@ export default function DashboardPage() {
                   </ResponsiveContainer>
                   {/* Absolute Center Text */}
                   <div className="absolute flex flex-col items-center justify-center">
-                    <span className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider">
+                    <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
                       Total Cost
                     </span>
                     <span className="text-xl font-extrabold tracking-tight">
@@ -692,15 +705,15 @@ export default function DashboardPage() {
                   </div>
                 </>
               ) : (
-                <div className="text-zinc-600 text-xs">
+                <div className="text-muted-foreground/60 text-xs">
                   Add trips to see classification.
                 </div>
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4 border-t border-zinc-900 pt-4">
+            <div className="grid grid-cols-2 gap-4 border-t border-border pt-4">
               <div className="flex flex-col">
-                <div className="flex items-center gap-1.5 text-zinc-400 text-xs">
+                <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
                   <span className="size-2 rounded-full bg-indigo-500" />
                   <span>Office</span>
                 </div>
@@ -709,7 +722,7 @@ export default function DashboardPage() {
                 </span>
               </div>
               <div className="flex flex-col">
-                <div className="flex items-center gap-1.5 text-zinc-400 text-xs">
+                <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
                   <span className="size-2 rounded-full bg-pink-500" />
                   <span>Personal</span>
                 </div>
@@ -729,7 +742,7 @@ export default function DashboardPage() {
               <h3 className="text-lg font-bold tracking-tight">
                 Route Statistics
               </h3>
-              <p className="text-zinc-500 text-xs mt-0.5">
+              <p className="text-muted-foreground text-xs mt-0.5">
                 Comparison of spending between Normal and Highway routing.
               </p>
             </div>
@@ -738,10 +751,10 @@ export default function DashboardPage() {
               {/* Highway stats progress */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-zinc-400 font-medium">Highway</span>
+                  <span className="text-muted-foreground font-medium">Highway</span>
                   <span className="font-bold">Rs. {highwayCost.toFixed(0)}</span>
                 </div>
-                <div className="w-full bg-zinc-900 rounded-full h-2 border border-zinc-900">
+                <div className="w-full bg-muted rounded-full h-2 border border-border">
                   <div
                     className="bg-indigo-500 h-2 rounded-full"
                     style={{
@@ -758,10 +771,10 @@ export default function DashboardPage() {
               {/* Normal stats progress */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-zinc-400 font-medium">Normal Route</span>
+                  <span className="text-muted-foreground font-medium">Normal Route</span>
                   <span className="font-bold">Rs. {normalCost.toFixed(0)}</span>
                 </div>
-                <div className="w-full bg-zinc-900 rounded-full h-2 border border-zinc-900">
+                <div className="w-full bg-muted rounded-full h-2 border border-border">
                   <div
                     className="bg-cyan-500 h-2 rounded-full"
                     style={{
@@ -776,8 +789,8 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="border-t border-zinc-900 pt-4">
-              <p className="text-[10px] text-zinc-500 text-center leading-relaxed">
+            <div className="border-t border-border pt-4">
+              <p className="text-[10px] text-muted-foreground text-center leading-relaxed">
                 Driving on highways usually improves KM/L compared to slow, stop-and-go normal city roads.
               </p>
             </div>
@@ -790,13 +803,13 @@ export default function DashboardPage() {
                 <h3 className="text-lg font-bold tracking-tight">
                   Recent Commutes
                 </h3>
-                <p className="text-zinc-500 text-xs mt-0.5">
+                <p className="text-muted-foreground text-xs mt-0.5">
                   Latest trips completed in the current billing cycle.
                 </p>
               </div>
               <button
                 onClick={() => router.push("/trips")}
-                className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold transition-colors flex items-center gap-1 group/btn"
+                className="text-xs text-indigo-500 dark:text-indigo-400 hover:text-indigo-650 dark:hover:text-indigo-300 font-semibold transition-colors flex items-center gap-1 group/btn"
               >
                 <span>View History</span>
                 <ArrowUpRight className="size-3.5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
@@ -808,10 +821,10 @@ export default function DashboardPage() {
                 recentTrips.map((trip) => (
                   <div
                     key={trip.id}
-                    className="bg-zinc-900/40 hover:bg-zinc-900 border border-zinc-900 hover:border-zinc-800 p-4 rounded-2xl flex items-center justify-between transition-all duration-300"
+                    className="bg-card/40 hover:bg-card border border-border hover:border-border/80 p-4 rounded-2xl flex items-center justify-between transition-all duration-300"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400">
+                      <div className="p-2.5 rounded-xl bg-muted border border-border text-muted-foreground">
                         <Milestone className="size-4" />
                       </div>
                       <div>
@@ -821,16 +834,16 @@ export default function DashboardPage() {
                           </span>
                           <span
                             className={cn(
-                              "text-[9px] font-bold px-1.5 py-0.5 rounded",
+                              "text-[9px] font-bold px-1.5 py-0.5 rounded border",
                               trip.category === "Office"
-                                ? "bg-indigo-950/60 text-indigo-400 border border-indigo-900/30"
-                                : "bg-pink-950/60 text-pink-400 border border-pink-900/30"
+                                ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/25"
+                                : "bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/25"
                             )}
                           >
                             {trip.category}
                           </span>
                         </div>
-                        <span className="text-[10px] text-zinc-500">
+                        <span className="text-[10px] text-muted-foreground">
                           {new Date(trip.trip_date).toLocaleDateString(
                             "en-US",
                             {
@@ -844,17 +857,17 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="text-right">
-                      <p className="font-bold text-sm text-indigo-400">
+                      <p className="font-bold text-sm text-indigo-500">
                         Rs. {trip.estimated_cost.toFixed(0)}
                       </p>
-                      <p className="text-[10px] text-zinc-500">
+                      <p className="text-[10px] text-muted-foreground">
                         {trip.litres_used.toFixed(1)}L pumped
                       </p>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="h-28 flex items-center justify-center text-zinc-600 text-xs">
+                <div className="h-28 flex items-center justify-center text-muted-foreground/60 text-xs">
                   No trips logged this month yet.
                 </div>
               )}
