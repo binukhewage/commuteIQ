@@ -52,9 +52,14 @@ export default function DashboardPage() {
   const [normalCost, setNormalCost] = useState(0);
   const [totalDistance, setTotalDistance] = useState(0);
 
-  // New Requested Monthly Statistics
   const [monthlyFuelUsed, setMonthlyFuelUsed] = useState(0);
   const [monthlyRefuelSpend, setMonthlyRefuelSpend] = useState(0);
+
+  // New Quick Stats Counts
+  const [officeTripsCount, setOfficeTripsCount] = useState(0);
+  const [personalTripsCount, setPersonalTripsCount] = useState(0);
+  const [highwayTripsCount, setHighwayTripsCount] = useState(0);
+  const [normalTripsCount, setNormalTripsCount] = useState(0);
 
   // UI States
   const [loading, setLoading] = useState(true);
@@ -187,6 +192,12 @@ export default function DashboardPage() {
       setHighwayCost(highway);
       setNormalCost(normal);
 
+      // Quick Stats Counts
+      setOfficeTripsCount(monthlyTrips.filter((t) => t.category === "Office").length);
+      setPersonalTripsCount(monthlyTrips.filter((t) => t.category === "Personal").length);
+      setHighwayTripsCount(monthlyTrips.filter((t) => t.route_type === "Highway").length);
+      setNormalTripsCount(monthlyTrips.filter((t) => t.route_type === "Normal").length);
+
       // Total Monthly Kms Travelled (Requested)
       const distance = monthlyTrips.reduce(
         (sum, trip) => sum + Number(trip.distance_km),
@@ -220,15 +231,28 @@ export default function DashboardPage() {
       const chartMap = {};
       monthlyTrips.forEach((trip) => {
         const day = new Date(trip.trip_date).getDate();
-        chartMap[day] = (chartMap[day] || 0) + Number(trip.estimated_cost);
+        if (!chartMap[day]) {
+          chartMap[day] = { cost: 0, distance: 0, officeKm: 0, personalKm: 0 };
+        }
+        chartMap[day].cost += Number(trip.estimated_cost);
+        chartMap[day].distance += Number(trip.distance_km);
+        if (trip.category === "Office") {
+          chartMap[day].officeKm += Number(trip.distance_km);
+        } else if (trip.category === "Personal") {
+          chartMap[day].personalKm += Number(trip.distance_km);
+        }
       });
 
       // Fill in all days up to today
       const dailyExpenses = Array.from({ length: today }, (_, i) => {
         const d = i + 1;
+        const data = chartMap[d] || { cost: 0, distance: 0, officeKm: 0, personalKm: 0 };
         return {
           day: `${d}`,
-          Cost: Number((chartMap[d] || 0).toFixed(0)),
+          Cost: Number(data.cost.toFixed(0)),
+          "Total KMs": Number(data.distance.toFixed(1)),
+          "Office KMs": Number(data.officeKm.toFixed(1)),
+          "Personal KMs": Number(data.personalKm.toFixed(1)),
         };
       });
       setDailyData(dailyExpenses);
@@ -276,13 +300,29 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="size-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
-          <p className="text-muted-foreground text-sm font-medium tracking-wide">
-            Loading CommuteIQ Analytics...
-          </p>
-        </div>
+      <div className="min-h-screen bg-background text-foreground flex">
+        <Sidebar />
+        <main className="flex-1 md:pl-64 pt-[calc(env(safe-area-inset-top)+5rem)] md:pt-10 pb-[calc(env(safe-area-inset-bottom)+7rem)] md:pb-8 p-4 md:p-10 max-w-7xl mx-auto w-full space-y-8 overflow-x-hidden">
+          <div className="flex flex-col md:flex-row justify-between gap-4 border-b border-border pb-6 animate-pulse">
+            <div className="space-y-2">
+              <div className="h-4 w-32 bg-muted rounded"></div>
+              <div className="h-8 w-64 bg-muted rounded"></div>
+              <div className="h-4 w-48 bg-muted rounded"></div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="glass-panel h-36 rounded-2xl p-6 animate-pulse space-y-4">
+                <div className="flex justify-between">
+                  <div className="h-4 w-24 bg-muted rounded"></div>
+                  <div className="size-8 bg-muted rounded-xl"></div>
+                </div>
+                <div className="h-8 w-32 bg-muted rounded mt-2"></div>
+                <div className="h-2 w-full bg-muted rounded mt-4"></div>
+              </div>
+            ))}
+          </div>
+        </main>
       </div>
     );
   }
@@ -298,7 +338,7 @@ export default function DashboardPage() {
       <Sidebar />
 
       {/* Main Content Area */}
-      <main className="flex-1 md:pl-64 pb-24 md:pb-8 p-4 md:p-10 max-w-7xl mx-auto w-full space-y-8 overflow-x-hidden animate-slide-up">
+      <main className="flex-1 md:pl-64 pt-[calc(env(safe-area-inset-top)+5rem)] md:pt-10 pb-[calc(env(safe-area-inset-bottom)+7rem)] md:pb-8 p-4 md:p-10 max-w-7xl mx-auto w-full space-y-8 overflow-x-hidden animate-slide-up">
         {/* HEADER */}
         <header className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-border pb-6">
           <div>
@@ -606,24 +646,10 @@ export default function DashboardPage() {
             <div className="h-64 w-full">
               {dailyData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
+                  <BarChart
                     data={dailyData}
                     margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                   >
-                    <defs>
-                      <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
-                        <stop
-                          offset="5%"
-                          stopColor="oklch(0.65 0.19 250)"
-                          stopOpacity={0.4}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor="oklch(0.65 0.19 250)"
-                          stopOpacity={0}
-                        />
-                      </linearGradient>
-                    </defs>
                     <XAxis
                       dataKey="day"
                       tickLine={false}
@@ -636,24 +662,59 @@ export default function DashboardPage() {
                       tick={{ fill: isDark ? "#71717a" : "#64748b", fontSize: 10 }}
                     />
                     <Tooltip
-                      contentStyle={{
-                        backgroundColor: isDark ? "#09090b" : "#ffffff",
-                        border: `1px solid ${isDark ? "#1c1c1f" : "#e2e8f0"}`,
-                        borderRadius: "12px",
-                        color: isDark ? "#ffffff" : "#0f172a",
-                        fontSize: "12px",
+                      cursor={{ fill: isDark ? "#1f2937" : "#f1f5f9" }}
+                      content={({ active, payload, label }) => {
+                        if (active && payload && payload.length) {
+                          const data = payload[0].payload;
+                          return (
+                            <div
+                              style={{
+                                backgroundColor: isDark ? "#09090b" : "#ffffff",
+                                border: `1px solid ${isDark ? "#1c1c1f" : "#e2e8f0"}`,
+                                borderRadius: "12px",
+                                color: isDark ? "#ffffff" : "#0f172a",
+                                fontSize: "12px",
+                                padding: "12px",
+                                boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)"
+                              }}
+                              className="font-medium"
+                            >
+                              <p className="font-bold mb-3 border-b border-border pb-2 text-sm">Day {label}</p>
+                              <p className="text-indigo-500 font-bold mb-3 text-sm">Cost: Rs. {data.Cost}</p>
+                              {data["Total KMs"] > 0 ? (
+                                <div className="space-y-1.5 text-xs">
+                                  <div className="flex items-center justify-between gap-4">
+                                    <span className="text-muted-foreground">Total Distance:</span>
+                                    <span className="font-bold text-foreground">{data["Total KMs"]} KM</span>
+                                  </div>
+                                  {data["Office KMs"] > 0 && (
+                                    <div className="flex items-center justify-between gap-4">
+                                      <span className="text-muted-foreground flex items-center gap-1.5"><span className="size-2 rounded-full bg-indigo-500" />Office:</span>
+                                      <span className="font-semibold text-foreground">{data["Office KMs"]} KM</span>
+                                    </div>
+                                  )}
+                                  {data["Personal KMs"] > 0 && (
+                                    <div className="flex items-center justify-between gap-4">
+                                      <span className="text-muted-foreground flex items-center gap-1.5"><span className="size-2 rounded-full bg-pink-500" />Personal:</span>
+                                      <span className="font-semibold text-foreground">{data["Personal KMs"]} KM</span>
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <p className="text-muted-foreground text-xs">No trips logged</p>
+                              )}
+                            </div>
+                          );
+                        }
+                        return null;
                       }}
-                      labelFormatter={(label) => `Day ${label}`}
                     />
-                    <Area
-                      type="monotone"
+                    <Bar
                       dataKey="Cost"
-                      stroke="oklch(0.65 0.19 250)"
-                      strokeWidth={2}
-                      fillOpacity={1}
-                      fill="url(#colorCost)"
+                      fill="oklch(0.65 0.19 250)"
+                      radius={[4, 4, 0, 0]}
                     />
-                  </AreaChart>
+                  </BarChart>
                 </ResponsiveContainer>
               ) : (
                 <div className="h-full flex items-center justify-center text-muted-foreground/60 text-xs">
@@ -796,8 +857,39 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Recent Trips Log */}
+          {/* Quick Stats Section */}
           <div className="glass-panel rounded-3xl p-6 lg:col-span-2 space-y-4">
+            <div>
+              <h3 className="text-lg font-bold tracking-tight">Trip Counters</h3>
+              <p className="text-muted-foreground text-xs mt-0.5">Quick summary of trip frequency by type this month.</p>
+            </div>
+            
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="bg-card/40 p-4 rounded-2xl border border-border">
+                <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider block mb-1">Office</span>
+                <span className="text-2xl font-extrabold text-indigo-500">{officeTripsCount}</span>
+                <span className="text-[10px] text-muted-foreground block">Trips</span>
+              </div>
+              <div className="bg-card/40 p-4 rounded-2xl border border-border">
+                <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider block mb-1">Personal</span>
+                <span className="text-2xl font-extrabold text-pink-500">{personalTripsCount}</span>
+                <span className="text-[10px] text-muted-foreground block">Trips</span>
+              </div>
+              <div className="bg-card/40 p-4 rounded-2xl border border-border">
+                <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider block mb-1">Highway</span>
+                <span className="text-2xl font-extrabold text-cyan-500">{highwayTripsCount}</span>
+                <span className="text-[10px] text-muted-foreground block">Trips</span>
+              </div>
+              <div className="bg-card/40 p-4 rounded-2xl border border-border">
+                <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider block mb-1">Normal</span>
+                <span className="text-2xl font-extrabold text-foreground">{normalTripsCount}</span>
+                <span className="text-[10px] text-muted-foreground block">Trips</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Trips Log */}
+          <div className="glass-panel rounded-3xl p-6 lg:col-span-3 space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-bold tracking-tight">

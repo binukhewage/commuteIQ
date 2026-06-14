@@ -99,9 +99,9 @@ export default function FuelPage() {
       <Sidebar />
 
       {/* Main Content Area */}
-      <main className="flex-1 md:pl-64 pb-24 md:pb-8 p-4 md:p-10 max-w-5xl mx-auto w-full space-y-8 overflow-x-hidden animate-slide-up">
+      <main className="flex-1 md:pl-64 pt-[calc(env(safe-area-inset-top)+5rem)] md:pt-10 pb-[calc(env(safe-area-inset-bottom)+7rem)] md:pb-8 p-4 md:p-10 max-w-5xl mx-auto w-full space-y-8 overflow-x-hidden animate-slide-up">
         {/* HEADER */}
-        <header className="border-b border-border pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <header className="sticky top-[calc(env(safe-area-inset-top)+3.5rem)] md:top-0 z-40 bg-background/90 backdrop-blur-2xl border-b border-border pb-6 pt-4 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 -mx-4 px-4 md:-mx-10 md:px-10">
           <div>
             <div className="flex items-center gap-2 text-indigo-500 dark:text-indigo-400 text-sm font-semibold uppercase tracking-wider mb-1">
               <Droplet className="size-4" />
@@ -135,13 +135,14 @@ export default function FuelPage() {
                 </label>
                 <div className="relative">
                   <input
+                    id="fuel-form-litres"
                     type="number"
                     step="any"
                     required
                     placeholder="e.g. 35"
                     value={litres}
                     onChange={(e) => setLitres(e.target.value)}
-                    className="w-full p-3 rounded-xl bg-background border border-border text-xs font-bold focus:outline-none focus:border-indigo-500 text-foreground"
+                    className="w-full p-3.5 rounded-xl bg-background border border-border text-sm font-bold focus:outline-none focus:border-indigo-500 text-foreground"
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-semibold">
                     L
@@ -162,7 +163,7 @@ export default function FuelPage() {
                     placeholder="e.g. 14350"
                     value={amountSpent}
                     onChange={(e) => setAmountSpent(e.target.value)}
-                    className="w-full p-3 pl-10 rounded-xl bg-background border border-border text-xs font-bold focus:outline-none focus:border-indigo-500 text-foreground"
+                    className="w-full p-3.5 pl-10 rounded-xl bg-background border border-border text-sm font-bold focus:outline-none focus:border-indigo-500 text-foreground"
                   />
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-semibold">
                     Rs.
@@ -178,7 +179,7 @@ export default function FuelPage() {
                 <select
                   value={fuelType}
                   onChange={(e) => setFuelType(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-background border border-border text-xs font-semibold focus:outline-none focus:border-indigo-500 text-foreground"
+                  className="w-full p-3.5 rounded-xl bg-background border border-border text-sm font-semibold focus:outline-none focus:border-indigo-500 text-foreground"
                 >
                   <option>Petrol 92</option>
                   <option>Petrol 95</option>
@@ -223,8 +224,22 @@ export default function FuelPage() {
             </div>
 
             {loading ? (
-              <div className="h-60 flex items-center justify-center">
-                <div className="size-8 border-2 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="glass-panel p-5 rounded-2xl animate-pulse flex flex-col sm:flex-row justify-between gap-4 border border-border">
+                    <div className="flex gap-4 items-center">
+                      <div className="size-12 bg-muted rounded-xl"></div>
+                      <div className="space-y-2">
+                        <div className="h-5 w-24 bg-muted rounded"></div>
+                        <div className="h-3 w-32 bg-muted rounded"></div>
+                      </div>
+                    </div>
+                    <div className="space-y-2 sm:text-right">
+                      <div className="h-6 w-20 bg-muted rounded sm:ml-auto"></div>
+                      <div className="h-3 w-16 bg-muted rounded sm:ml-auto"></div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : fuelHistory.length > 0 ? (
               <div className="space-y-3.5 md:max-h-[640px] md:overflow-y-auto pr-1">
@@ -297,12 +312,20 @@ export default function FuelPage() {
                 })}
               </div>
             ) : (
-              <div className="glass-panel border-dashed border-border rounded-3xl p-12 text-center flex flex-col items-center justify-center space-y-3">
-                <AlertCircle className="size-8 text-muted-foreground" />
-                <h3 className="font-bold text-sm text-muted-foreground">No refuels logged yet</h3>
-                <p className="text-xs text-muted-foreground max-w-sm">
-                  Log your fuel station transactions here. This updates remaining fuel volumes and aggregates fuel expense trends automatically.
+              <div className="glass-panel border-dashed border-border rounded-3xl p-12 text-center flex flex-col items-center justify-center space-y-4">
+                <div className="p-4 bg-muted/50 rounded-full text-indigo-500 mb-2">
+                  <Fuel className="size-10 opacity-80" />
+                </div>
+                <h3 className="font-extrabold text-lg tracking-tight">No fuel logged yet</h3>
+                <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
+                  Start tracking your fuel refills to unlock insights on pricing and consumption trends.
                 </p>
+                <button
+                  onClick={() => document.getElementById('fuel-form-litres')?.focus()}
+                  className="mt-4 bg-foreground text-background px-6 py-2.5 rounded-full font-bold text-xs tracking-wider uppercase hover:bg-foreground/90 transition-colors shadow-md shadow-foreground/5"
+                >
+                  Log First Refuel
+                </button>
               </div>
             )}
           </div>
